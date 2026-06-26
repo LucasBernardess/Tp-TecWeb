@@ -9,11 +9,13 @@ out/
 build/
 
 # Environment variables
-.env
+# .env is intentionally tracked (contains only public/anon Supabase keys).
+# Local overrides and anything with secrets stay out of git.
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.secret
 
 # Debug logs
 npm-debug.log*
