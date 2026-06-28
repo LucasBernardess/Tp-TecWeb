@@ -5,3 +5,4 @@ export * from "./ligaService";
 export * from "./clubeService";
 export * from "./jogadorService";
 export * from "./estatisticaService";
+export * from "./overviewService";

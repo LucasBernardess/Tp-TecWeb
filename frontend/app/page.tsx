@@ -1,33 +1,15 @@
 import { Users, Globe, Shield, Trophy, LayoutDashboard } from "lucide-react";
 import { StatCard } from "@/components/stat-card";
 import { PlayerCard } from "@/components/player-card";
+import { getOverview } from "@/services";
 
-const MOCK_OVERVIEW = {
-  total_players: 2583,
-  total_teams: 98,
-  total_nations: 112,
-  positions: { FW: 612, MF: 798, DF: 891, GK: 282 },
-  top_scorers: [
-    { Player: "Erling Haaland", Squad: "Manchester City", Pos: "FW", Gls: 27, Ast: 5, xG: 24.1 },
-    { Player: "Kylian Mbappé", Squad: "Real Madrid", Pos: "FW", Gls: 25, Ast: 8, xG: 22.4 },
-    { Player: "Harry Kane", Squad: "Bayern Munich", Pos: "FW", Gls: 24, Ast: 11, xG: 21.8 },
-    { Player: "Robert Lewandowski", Squad: "Barcelona", Pos: "FW", Gls: 22, Ast: 6, xG: 20.3 },
-    { Player: "Victor Osimhen", Squad: "Galatasaray", Pos: "FW", Gls: 21, Ast: 4, xG: 18.9 },
-  ],
-  top_assists: [
-    { Player: "Kevin De Bruyne", Squad: "Manchester City", Pos: "MF", Gls: 5, Ast: 18, xAG: 16.2 },
-    { Player: "Bukayo Saka", Squad: "Arsenal", Pos: "FW", Gls: 16, Ast: 14, xAG: 13.1 },
-    { Player: "Trent Alexander-Arnold", Squad: "Liverpool", Pos: "DF", Gls: 3, Ast: 13, xAG: 12.4 },
-    { Player: "Bruno Fernandes", Squad: "Manchester Utd", Pos: "MF", Gls: 10, Ast: 12, xAG: 11.8 },
-    { Player: "Bernardo Silva", Squad: "Manchester City", Pos: "MF", Gls: 7, Ast: 11, xAG: 10.9 },
-  ],
-};
+export const dynamic = "force-dynamic";
 
 const posLabel: Record<string, string> = { FW: "Atacantes", MF: "Meias", DF: "Defensores", GK: "Goleiros" };
 
-export default function HomePage() {
-  const d = MOCK_OVERVIEW;
-  const totalPos = Object.values(d.positions).reduce((a, b) => a + b, 0);
+export default async function HomePage() {
+  const d = await getOverview();
+  const totalPos = Object.values(d.positions).reduce((a, b) => a + b, 0) || 1;
 
   return (
     <div className="p-8">
@@ -37,7 +19,7 @@ export default function HomePage() {
           <LayoutDashboard size={22} className="text-brand-600" />
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         </div>
-        <p className="text-gray-500">Visão geral · Top 10 Ligas Europeias 2024-25</p>
+        <p className="text-gray-500">Visão geral · 10 grandes ligas · Temporada 2024-25</p>
       </div>
 
       {/* Stat Cards */}
@@ -45,7 +27,7 @@ export default function HomePage() {
         <StatCard label="Total de Jogadores" value={d.total_players.toLocaleString("pt-BR")} icon={Users} color="green" />
         <StatCard label="Times" value={d.total_teams} icon={Shield} color="blue" />
         <StatCard label="Nacionalidades" value={d.total_nations} icon={Globe} color="purple" />
-        <StatCard label="Ligas" value={10} icon={Trophy} color="orange" sub="Top 10 da Europa" />
+        <StatCard label="Ligas" value={d.total_leagues} icon={Trophy} color="orange" sub="Principais ligas do mundo" />
       </div>
 
       {/* Position breakdown */}
@@ -84,15 +66,15 @@ export default function HomePage() {
           <div className="space-y-2">
             {d.top_scorers.map((p, i) => (
               <PlayerCard
-                key={p.Player}
-                name={p.Player}
-                squad={p.Squad}
-                position={p.Pos}
+                key={`${p.nome}-${i}`}
+                name={p.nome}
+                squad={p.squad}
+                position={p.posicao}
                 rank={i + 1}
                 stats={[
-                  { label: "Gols", value: p.Gls },
-                  { label: "Assist.", value: p.Ast },
-                  { label: "xG", value: p.xG },
+                  { label: "Gols", value: p.gols },
+                  { label: "Assist.", value: p.assistencias },
+                  { label: "xG", value: p.xg.toFixed(1) },
                 ]}
               />
             ))}
@@ -106,15 +88,15 @@ export default function HomePage() {
           <div className="space-y-2">
             {d.top_assists.map((p, i) => (
               <PlayerCard
-                key={p.Player}
-                name={p.Player}
-                squad={p.Squad}
-                position={p.Pos}
+                key={`${p.nome}-${i}`}
+                name={p.nome}
+                squad={p.squad}
+                position={p.posicao}
                 rank={i + 1}
                 stats={[
-                  { label: "Assist.", value: p.Ast },
-                  { label: "Gols", value: p.Gls },
-                  { label: "xAG", value: p.xAG },
+                  { label: "Assist.", value: p.assistencias },
+                  { label: "Gols", value: p.gols },
+                  { label: "xAG", value: p.xag.toFixed(1) },
                 ]}
               />
             ))}
