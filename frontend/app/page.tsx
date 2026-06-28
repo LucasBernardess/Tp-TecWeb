@@ -67,6 +67,7 @@ export default async function HomePage() {
             {d.top_scorers.map((p, i) => (
               <PlayerCard
                 key={`${p.nome}-${i}`}
+                href={p.id_jogador != null ? `/players/${p.id_jogador}` : undefined}
                 name={p.nome}
                 squad={p.squad}
                 position={p.posicao}
@@ -89,6 +90,7 @@ export default async function HomePage() {
             {d.top_assists.map((p, i) => (
               <PlayerCard
                 key={`${p.nome}-${i}`}
+                href={p.id_jogador != null ? `/players/${p.id_jogador}` : undefined}
                 name={p.nome}
                 squad={p.squad}
                 position={p.posicao}

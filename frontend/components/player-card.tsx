@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import Link from "next/link";
 
 interface PlayerCardProps {
   name: string;
@@ -9,6 +10,8 @@ interface PlayerCardProps {
   score?: number;
   rank?: number;
   onClick?: () => void;
+  /** Quando informado, o card vira um link de navegação (ex.: perfil do jogador). */
+  href?: string;
 }
 
 const posColors: Record<string, string> = {
@@ -18,16 +21,17 @@ const posColors: Record<string, string> = {
   FW: "bg-red-100 text-red-700",
 };
 
-export function PlayerCard({ name, squad, position, nationality, stats, score, rank, onClick }: PlayerCardProps) {
+export function PlayerCard({ name, squad, position, nationality, stats, score, rank, onClick, href }: PlayerCardProps) {
   const pos = position?.split(",")[0]?.trim() ?? "—";
   const posColor = posColors[pos] ?? "bg-gray-100 text-gray-700";
+  const clickable = Boolean(onClick || href);
 
-  return (
+  const card = (
     <div
       onClick={onClick}
       className={clsx(
         "bg-white rounded-xl border border-gray-100 p-4 shadow-sm transition-shadow",
-        onClick && "cursor-pointer hover:shadow-md hover:border-brand-200"
+        clickable && "cursor-pointer hover:shadow-md hover:border-brand-200"
       )}
     >
       <div className="flex items-start gap-3">
@@ -68,4 +72,14 @@ export function PlayerCard({ name, squad, position, nationality, stats, score, r
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }

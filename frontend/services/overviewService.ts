@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 
 export interface OverviewPlayer {
+  id_jogador: number | null;
   nome: string;
   squad: string;
   posicao: string;
@@ -64,7 +65,7 @@ async function countNations(totalPlayers: number): Promise<number> {
 async function topBy(metric: "gols" | "assistencias"): Promise<OverviewPlayer[]> {
   const { data, error } = await supabase
     .from("ESTATISTICA")
-    .select("gols,assistencias,xg,xag,JOGADOR(nome,posicao,CLUBE(nome))")
+    .select("gols,assistencias,xg,xag,JOGADOR(id_jogador,nome,posicao,CLUBE(nome))")
     .order(metric, { ascending: false })
     .limit(5);
   if (error) throw error;
@@ -72,10 +73,11 @@ async function topBy(metric: "gols" | "assistencias"): Promise<OverviewPlayer[]>
   return (data ?? []).map((row) => {
     const r = row as Record<string, unknown>;
     const jogador = (Array.isArray(r.JOGADOR) ? r.JOGADOR[0] : r.JOGADOR) as
-      | { nome?: string; posicao?: string; CLUBE?: { nome?: string } | { nome?: string }[] }
+      | { id_jogador?: number; nome?: string; posicao?: string; CLUBE?: { nome?: string } | { nome?: string }[] }
       | undefined;
     const clube = Array.isArray(jogador?.CLUBE) ? jogador?.CLUBE[0] : jogador?.CLUBE;
     return {
+      id_jogador: jogador?.id_jogador ?? null,
       nome: jogador?.nome ?? "—",
       squad: clube?.nome ?? "—",
       posicao: jogador?.posicao ?? "—",
