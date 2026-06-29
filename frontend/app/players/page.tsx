@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Filter, Users, X } from "lucide-react";
+import { Filter, Users, X, Clock } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
 import { PlayerGridSkeleton } from "@/components/skeleton";
 import {
@@ -13,7 +13,7 @@ import {
   type Liga,
 } from "@/services";
 import { useAuth } from "@/lib/authContext";
-import { recordHistory } from "@/lib/history";
+import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
 
 const POSITIONS = [
   { value: "", label: "Todas" },
@@ -53,6 +53,19 @@ export default function PlayersPage() {
   // Opções dos selects de clube/liga
   const [clubes, setClubes] = useState<Clube[]>([]);
   const [ligas, setLigas] = useState<Liga[]>([]);
+
+  const [recent, setRecent] = useState<HistoryEntry[]>([]);
+  const loadRecent = useCallback(async () => {
+    try {
+      setRecent(await listRecentHistory(user, "filter", 5));
+    } catch {
+      setRecent([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadRecent();
+  }, [loadRecent]);
 
   // Carrega as opções de filtro uma única vez
   useEffect(() => {
@@ -98,27 +111,12 @@ export default function PlayersPage() {
     fetchPlayers(applied, offset);
   }, [fetchPlayers, applied, offset]);
 
-  function buildFilterSummary(f: typeof applied): string | null {
-    const parts: string[] = [];
-    if (f.nome) parts.push(f.nome);
-    if (f.position) parts.push(POSITIONS.find((p) => p.value === f.position)?.label ?? f.position);
-    if (f.idClube) {
-      const nome = clubes.find((c) => String(c.id_clube) === f.idClube)?.nome;
-      if (nome) parts.push(nome);
-    }
-    if (f.idLiga) {
-      const nome = ligas.find((l) => String(l.id_liga) === f.idLiga)?.nome;
-      if (nome) parts.push(nome);
-    }
-    return parts.length > 0 ? parts.join(" · ") : null;
-  }
-
-  function applyFilters() {
+  function applyFilters(overrideNome?: string) {
+    const n = overrideNome ?? nome;
+    if (overrideNome !== undefined) setNome(overrideNome);
     setOffset(0);
-    const next = { nome, position, idClube, idLiga, ordenarPor };
-    setApplied(next);
-    const summary = buildFilterSummary(next);
-    if (summary) recordHistory(user, summary, "search").catch(() => {});
+    setApplied({ nome: n, position, idClube, idLiga, ordenarPor });
+    if (n.trim()) recordHistory(user, n.trim(), "filter").then(loadRecent).catch(() => {});
   }
 
   function clearFilters() {
@@ -219,7 +217,7 @@ export default function PlayersPage() {
           </div>
 
           <button
-            onClick={applyFilters}
+            onClick={() => applyFilters()}
             className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
           >
             <Filter size={15} /> Filtrar
@@ -234,6 +232,24 @@ export default function PlayersPage() {
             </button>
           )}
         </div>
+
+        {/* Buscas recentes */}
+        {recent.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+              <Clock size={12} /> Recentes:
+            </span>
+            {recent.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => applyFilters(r.termo)}
+                className="text-xs bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
+              >
+                {r.termo}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Erro */}

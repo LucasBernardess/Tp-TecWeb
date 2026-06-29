@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Network, Sparkles, Loader2, Info, Search } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Network, Loader2, Info, Search, Clock } from "lucide-react";
 
 import { PlayerCard } from "@/components/player-card";
 import { Skeleton, PlayerListSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
-import { recordHistory } from "@/lib/history";
+import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
 import { getJogadoresFiltrados, type JogadorListItem } from "@/services/jogadorService";
-
-const EXAMPLES = ["Erling Haaland", "Kylian Mbappé", "Kevin De Bruyne", "Virgil van Dijk"];
 
 type Player = Record<string, string | number | null>;
 
@@ -20,6 +18,19 @@ export default function RecommendPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ player: Player; similar_players: Player[] } | null>(null);
   const [error, setError] = useState("");
+  const [recent, setRecent] = useState<HistoryEntry[]>([]);
+
+  const loadRecent = useCallback(async () => {
+    try {
+      setRecent(await listRecentHistory(user, "recommend", 5));
+    } catch {
+      setRecent([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadRecent();
+  }, [loadRecent]);
 
   const [suggestions, setSuggestions] = useState<JogadorListItem[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -129,7 +140,7 @@ export default function RecommendPage() {
       if (!res.ok) throw new Error("Erro ao conectar ao serviço ML.");
       const data = await res.json();
       setResult(data);
-      recordHistory(user, name.trim(), "recommend").catch(() => {});
+      recordHistory(user, name.trim(), "recommend").then(loadRecent).catch(() => {});
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
@@ -232,22 +243,28 @@ export default function RecommendPage() {
             disabled={loading || !playerName.trim()}
             className="flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Network size={16} />}
             Recomendar
           </button>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              onClick={() => { setPlayerName(ex); handleRecommend(ex); }}
-              className="text-xs bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
-            >
-              {ex}
-            </button>
-          ))}
-        </div>
+        {/* Recomendações recentes */}
+        {recent.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+              <Clock size={12} /> Recentes:
+            </span>
+            {recent.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => { setPlayerName(r.termo); handleRecommend(r.termo); }}
+                className="text-xs bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
+              >
+                {r.termo}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Error */}

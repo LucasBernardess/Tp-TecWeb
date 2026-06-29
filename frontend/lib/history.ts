@@ -1,7 +1,7 @@
-import { createPesquisa, getPesquisasByUsuario, deletePesquisa } from "@/services/pesquisaService";
+import { createPesquisa, getPesquisasByUsuario } from "@/services/pesquisaService";
 import type { AuthUser } from "./auth";
 
-export type HistoryType = "search" | "recommend";
+export type HistoryType = "search" | "filter" | "recommend";
 
 export interface HistoryEntry {
   id: string;
@@ -10,22 +10,27 @@ export interface HistoryEntry {
   data_hora: string;
 }
 
-const RECOMMEND_PREFIX = "@recommend ";
+const PREFIXES: Record<HistoryType, string> = {
+  search: "@search ",
+  filter: "@filter ",
+  recommend: "@recommend ",
+};
+
 const LOCAL_KEY = "futanalytics_history";
 const LOCAL_LIMIT = 50;
 
 function encode(termo: string, tipo: HistoryType): string {
-  return tipo === "recommend" ? `${RECOMMEND_PREFIX}${termo}` : termo;
+  return `${PREFIXES[tipo]}${termo}`;
 }
 
-function decode(raw: string): { termo: string; tipo: HistoryType } {
-  if (raw.startsWith(RECOMMEND_PREFIX)) {
-    return { termo: raw.slice(RECOMMEND_PREFIX.length), tipo: "recommend" };
+function decode(raw: string): { termo: string; tipo: HistoryType } | null {
+  for (const [tipo, prefix] of Object.entries(PREFIXES) as [HistoryType, string][]) {
+    if (raw.startsWith(prefix)) return { termo: raw.slice(prefix.length), tipo };
   }
-  return { termo: raw, tipo: "search" };
+  return null;
 }
 
-/** Registra uma busca/recomendação no histórico do usuário logado (Supabase) ou localmente. */
+/** Registra uma busca/filtro/recomendação no histórico do usuário logado (Supabase) ou localmente. */
 export async function recordHistory(
   user: AuthUser | null,
   termo: string,
@@ -45,34 +50,25 @@ export async function recordHistory(
   writeLocal(entries.slice(0, LOCAL_LIMIT));
 }
 
-export async function listHistory(user: AuthUser | null): Promise<HistoryEntry[]> {
+export async function listRecentHistory(
+  user: AuthUser | null,
+  tipo: HistoryType,
+  limit = 5
+): Promise<HistoryEntry[]> {
   if (user) {
     const rows = await getPesquisasByUsuario(user.id_usuario);
     return rows
       .map((r) => {
-        const { termo, tipo } = decode(r.termo);
-        return { id: String(r.id_pesquisa), termo, tipo, data_hora: r.data_hora };
+        const decoded = decode(r.termo);
+        return decoded ? { id: String(r.id_pesquisa), data_hora: r.data_hora, ...decoded } : null;
       })
-      .sort((a, b) => b.data_hora.localeCompare(a.data_hora));
+      .filter((e): e is HistoryEntry => e !== null && e.tipo === tipo)
+      .sort((a, b) => b.data_hora.localeCompare(a.data_hora))
+      .slice(0, limit);
   }
-  return readLocal();
-}
-
-export async function removeHistoryEntry(user: AuthUser | null, id: string): Promise<void> {
-  if (user) {
-    await deletePesquisa(Number(id));
-    return;
-  }
-  writeLocal(readLocal().filter((e) => e.id !== id));
-}
-
-export async function clearHistory(user: AuthUser | null): Promise<void> {
-  if (user) {
-    const rows = await getPesquisasByUsuario(user.id_usuario);
-    await Promise.all(rows.map((r) => deletePesquisa(r.id_pesquisa)));
-    return;
-  }
-  writeLocal([]);
+  return readLocal()
+    .filter((e) => e.tipo === tipo)
+    .slice(0, limit);
 }
 
 function readLocal(): HistoryEntry[] {

@@ -1,18 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Loader2, Info, SearchIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Search, Loader2, Info, Clock } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
 import { PlayerListSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
-import { recordHistory } from "@/lib/history";
-
-const EXAMPLES = [
-  "creative left winger with high goals and assists",
-  "defensive midfielder high progressive passes",
-  "goalkeeper with high saves and clean sheets",
-  "young forward high xG low minutes",
-];
+import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
 
 type Player = Record<string, string | number | null>;
 
@@ -24,6 +17,19 @@ export default function SearchPage() {
   const [results, setResults] = useState<Player[]>([]);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
+  const [recent, setRecent] = useState<HistoryEntry[]>([]);
+
+  const loadRecent = useCallback(async () => {
+    try {
+      setRecent(await listRecentHistory(user, "search", 5));
+    } catch {
+      setRecent([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadRecent();
+  }, [loadRecent]);
 
   async function handleSearch(q = query) {
     if (!q.trim()) return;
@@ -40,7 +46,7 @@ export default function SearchPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setResults(data.results ?? []);
-      recordHistory(user, q.trim(), "search").catch(() => {});
+      recordHistory(user, q.trim(), "search").then(loadRecent).catch(() => {});
     } catch {
       setError("Não foi possível conectar ao serviço ML. Certifique-se de que o ml-service está rodando.");
       setResults([]);
@@ -92,18 +98,23 @@ export default function SearchPage() {
           </button>
         </div>
 
-        {/* Examples */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              onClick={() => { setQuery(ex); handleSearch(ex); }}
-              className="text-xs bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
-            >
-              {ex}
-            </button>
-          ))}
-        </div>
+        {/* Buscas recentes */}
+        {recent.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+              <Clock size={12} /> Recentes:
+            </span>
+            {recent.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => { setQuery(r.termo); handleSearch(r.termo); }}
+                className="text-xs bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
+              >
+                {r.termo}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Error */}
