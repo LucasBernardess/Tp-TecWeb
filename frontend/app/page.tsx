@@ -71,6 +71,7 @@ export default async function HomePage() {
                 name={p.nome}
                 squad={p.squad}
                 position={p.posicao}
+                photoUrl={p.foto_url}
                 rank={i + 1}
                 stats={[
                   { label: "Gols", value: p.gols },
@@ -94,6 +95,7 @@ export default async function HomePage() {
                 name={p.nome}
                 squad={p.squad}
                 position={p.posicao}
+                photoUrl={p.foto_url}
                 rank={i + 1}
                 stats={[
                   { label: "Assist.", value: p.assistencias },

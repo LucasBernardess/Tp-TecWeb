@@ -10,9 +10,14 @@ import {
   Network,
   GitCompareArrows,
   Trophy,
+  History,
   ChevronLeft,
   ChevronRight,
+  LogIn,
+  LogOut,
+  UserCircle,
 } from "lucide-react";
+import { useAuth } from "@/lib/authContext";
 
 function BrandIcon({ size = 32 }: { size?: number }) {
   return (
@@ -35,6 +40,7 @@ const nav = [
   { label: "Buscar Jogadores",   href: "/search",            icon: Search },
   { label: "Recomendar Similares", href: "/recommend",       icon: Network },
   { label: "Jogadores",          href: "/players",           icon: Users },
+  { label: "Histórico",          href: "/history",           icon: History },
   { type: "divider", label: "Relatórios" },
   { label: "Ranking",            href: "/reports/ranking",   icon: Trophy },
   { label: "Similaridade",       href: "/reports/similarity",icon: GitCompareArrows },
@@ -42,6 +48,7 @@ const nav = [
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   return (
     <aside
@@ -105,6 +112,45 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Usuário */}
+      <div className="border-t border-zinc-700 p-3">
+        {user ? (
+          <div className={clsx("flex items-center gap-2", collapsed && "flex-col")}>
+            <div
+              className={clsx(
+                "flex items-center gap-2 flex-1 min-w-0",
+                collapsed && "flex-col"
+              )}
+              title={user.login}
+            >
+              <UserCircle size={20} className="text-zinc-400 shrink-0" />
+              {!collapsed && (
+                <span className="text-sm text-zinc-200 truncate">{user.login}</span>
+              )}
+            </div>
+            <button
+              onClick={signOut}
+              title="Sair"
+              className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-800 transition-colors shrink-0"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            title={collapsed ? "Entrar" : undefined}
+            className={clsx(
+              "flex items-center gap-2 text-zinc-400 hover:text-white text-sm rounded-lg py-2 px-2 hover:bg-zinc-800 transition-colors",
+              collapsed && "justify-center"
+            )}
+          >
+            <LogIn size={18} />
+            {!collapsed && <span>Entrar</span>}
+          </Link>
+        )}
+      </div>
 
       {/* Toggle button */}
       <div className="border-t border-zinc-700 p-3">

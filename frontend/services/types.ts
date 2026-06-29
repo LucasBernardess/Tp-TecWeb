@@ -31,6 +31,7 @@ export interface Jogador {
   ano_nascimento: number | null;
   posicao: string | null;
   id_clube: number | null;
+  foto_url: string | null;
 }
 
 export interface Estatistica {

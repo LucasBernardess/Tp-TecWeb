@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Search, Loader2, Info, SearchIcon } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
+import { PlayerListSkeleton } from "@/components/skeleton";
+import { useAuth } from "@/lib/authContext";
+import { recordHistory } from "@/lib/history";
 
 const EXAMPLES = [
   "creative left winger with high goals and assists",
@@ -14,6 +17,7 @@ const EXAMPLES = [
 type Player = Record<string, string | number | null>;
 
 export default function SearchPage() {
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [topK, setTopK] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -36,6 +40,7 @@ export default function SearchPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setResults(data.results ?? []);
+      recordHistory(user, q.trim(), "search").catch(() => {});
     } catch {
       setError("Não foi possível conectar ao serviço ML. Certifique-se de que o ml-service está rodando.");
       setResults([]);
@@ -110,7 +115,8 @@ export default function SearchPage() {
       )}
 
       {/* Results */}
-      {searched && !error && (
+      {loading && <PlayerListSkeleton count={topK > 5 ? 5 : topK} />}
+      {!loading && searched && !error && (
         <div>
           <p className="text-sm text-gray-500 mb-3">
             {results.length} resultado{results.length !== 1 ? "s" : ""} para{" "}
@@ -124,6 +130,7 @@ export default function SearchPage() {
                 squad={String(p.Squad ?? "—")}
                 position={String(p.Pos ?? "—")}
                 nationality={p.Nation ? String(p.Nation) : undefined}
+                photoUrl={p.photo_url ? String(p.photo_url) : undefined}
                 rank={i + 1}
                 score={typeof p.score === "number" ? p.score : undefined}
                 stats={[

@@ -11,6 +11,7 @@ export interface JogadorListItem {
   idade: number | null;
   posicao: string | null;
   id_clube: number | null;
+  foto_url: string | null;
   clube: string;
   liga: string;
   gols: number | null;
@@ -44,6 +45,7 @@ export interface JogadorPerfil {
   ano_nascimento: number | null;
   posicao: string | null;
   id_clube: number | null;
+  foto_url: string | null;
   clube: string;
   liga: string;
   pais_liga: string;
@@ -86,7 +88,7 @@ export async function getJogadoresFiltrados(
   let query = supabase
     .from(TABLE)
     .select(
-      `id_jogador,nome,nacionalidade,idade,posicao,id_clube,${clubeEmbed},ESTATISTICA(gols,assistencias,xg)`,
+      `id_jogador,nome,nacionalidade,idade,posicao,id_clube,foto_url,${clubeEmbed},ESTATISTICA(gols,assistencias,xg)`,
       { count: "exact" }
     );
 
@@ -119,6 +121,7 @@ export async function getJogadoresFiltrados(
       idade: (r.idade as number | null) ?? null,
       posicao: (r.posicao as string | null) ?? null,
       id_clube: (r.id_clube as number | null) ?? null,
+      foto_url: (r.foto_url as string | null) ?? null,
       clube: clube?.nome ?? "—",
       liga: liga?.nome ?? "—",
       gols: est?.gols ?? null,
@@ -154,6 +157,7 @@ export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
     ano_nascimento: (r.ano_nascimento as number | null) ?? null,
     posicao: (r.posicao as string | null) ?? null,
     id_clube: (r.id_clube as number | null) ?? null,
+    foto_url: (r.foto_url as string | null) ?? null,
     clube: clube?.nome ?? "—",
     liga: liga?.nome ?? "—",
     pais_liga: liga?.pais ?? "—",

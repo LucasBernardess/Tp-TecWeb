@@ -5,6 +5,7 @@ export interface OverviewPlayer {
   nome: string;
   squad: string;
   posicao: string;
+  foto_url: string | null;
   gols: number;
   assistencias: number;
   xg: number;
@@ -65,7 +66,7 @@ async function countNations(totalPlayers: number): Promise<number> {
 async function topBy(metric: "gols" | "assistencias"): Promise<OverviewPlayer[]> {
   const { data, error } = await supabase
     .from("ESTATISTICA")
-    .select("gols,assistencias,xg,xag,JOGADOR(id_jogador,nome,posicao,CLUBE(nome))")
+    .select("gols,assistencias,xg,xag,JOGADOR(id_jogador,nome,posicao,foto_url,CLUBE(nome))")
     .order(metric, { ascending: false })
     .limit(5);
   if (error) throw error;
@@ -73,7 +74,13 @@ async function topBy(metric: "gols" | "assistencias"): Promise<OverviewPlayer[]>
   return (data ?? []).map((row) => {
     const r = row as Record<string, unknown>;
     const jogador = (Array.isArray(r.JOGADOR) ? r.JOGADOR[0] : r.JOGADOR) as
-      | { id_jogador?: number; nome?: string; posicao?: string; CLUBE?: { nome?: string } | { nome?: string }[] }
+      | {
+          id_jogador?: number;
+          nome?: string;
+          posicao?: string;
+          foto_url?: string | null;
+          CLUBE?: { nome?: string } | { nome?: string }[];
+        }
       | undefined;
     const clube = Array.isArray(jogador?.CLUBE) ? jogador?.CLUBE[0] : jogador?.CLUBE;
     return {
@@ -81,6 +88,7 @@ async function topBy(metric: "gols" | "assistencias"): Promise<OverviewPlayer[]>
       nome: jogador?.nome ?? "—",
       squad: clube?.nome ?? "—",
       posicao: jogador?.posicao ?? "—",
+      foto_url: jogador?.foto_url ?? null,
       gols: Number(r.gols ?? 0),
       assistencias: Number(r.assistencias ?? 0),
       xg: Number(r.xg ?? 0),

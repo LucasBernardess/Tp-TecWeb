@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GitCompareArrows, Loader2 } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
+import { Skeleton, PlayerListSkeleton, TableSkeleton } from "@/components/skeleton";
 
 type Player = Record<string, string | number | null>;
 
@@ -92,7 +93,16 @@ export default function SimilarityReportPage() {
       )}
 
       {/* Report */}
-      {result && (
+      {loading && (
+        <div className="space-y-6">
+          <div>
+            <Skeleton className="h-4 w-40 mb-2" />
+            <PlayerListSkeleton count={1} />
+          </div>
+          <TableSkeleton cols={9} />
+        </div>
+      )}
+      {!loading && result && (
         <div className="space-y-6">
           {/* Reference card */}
           <div>
@@ -102,6 +112,7 @@ export default function SimilarityReportPage() {
               squad={String(result.player.Squad ?? "—")}
               position={String(result.player.Pos ?? "—")}
               nationality={result.player.Nation ? String(result.player.Nation) : undefined}
+              photoUrl={result.player.photo_url ? String(result.player.photo_url) : undefined}
               stats={STAT_COLS.slice(0, 5).map((s) => ({ label: s.label, value: result.player[s.key] ?? "—" }))}
             />
           </div>

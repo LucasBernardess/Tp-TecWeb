@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Filter, Loader2, Users, X } from "lucide-react";
+import { Filter, Users, X } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
+import { PlayerGridSkeleton } from "@/components/skeleton";
 import {
   getJogadoresFiltrados,
   getClubes,
@@ -11,6 +12,8 @@ import {
   type Clube,
   type Liga,
 } from "@/services";
+import { useAuth } from "@/lib/authContext";
+import { recordHistory } from "@/lib/history";
 
 const POSITIONS = [
   { value: "", label: "Todas" },
@@ -23,6 +26,8 @@ const POSITIONS = [
 const LIMIT = 30;
 
 export default function PlayersPage() {
+  const { user } = useAuth();
+
   // Filtros (estado "em edição" — só são aplicados ao clicar em Filtrar)
   const [nome, setNome] = useState("");
   const [position, setPosition] = useState("");
@@ -93,9 +98,27 @@ export default function PlayersPage() {
     fetchPlayers(applied, offset);
   }, [fetchPlayers, applied, offset]);
 
+  function buildFilterSummary(f: typeof applied): string | null {
+    const parts: string[] = [];
+    if (f.nome) parts.push(f.nome);
+    if (f.position) parts.push(POSITIONS.find((p) => p.value === f.position)?.label ?? f.position);
+    if (f.idClube) {
+      const nome = clubes.find((c) => String(c.id_clube) === f.idClube)?.nome;
+      if (nome) parts.push(nome);
+    }
+    if (f.idLiga) {
+      const nome = ligas.find((l) => String(l.id_liga) === f.idLiga)?.nome;
+      if (nome) parts.push(nome);
+    }
+    return parts.length > 0 ? parts.join(" · ") : null;
+  }
+
   function applyFilters() {
     setOffset(0);
-    setApplied({ nome, position, idClube, idLiga, ordenarPor });
+    const next = { nome, position, idClube, idLiga, ordenarPor };
+    setApplied(next);
+    const summary = buildFilterSummary(next);
+    if (summary) recordHistory(user, summary, "search").catch(() => {});
   }
 
   function clearFilters() {
@@ -222,9 +245,7 @@ export default function PlayersPage() {
 
       {/* Grid de jogadores */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-brand-500" />
-        </div>
+        <PlayerGridSkeleton />
       ) : players.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           Nenhum jogador encontrado com os filtros selecionados.
@@ -244,6 +265,7 @@ export default function PlayersPage() {
                 squad={p.clube}
                 position={p.posicao ?? "—"}
                 nationality={p.nacionalidade ?? undefined}
+                photoUrl={p.foto_url}
                 stats={[
                   { label: "Gols", value: p.gols ?? "—" },
                   { label: "Assist.", value: p.assistencias ?? "—" },

@@ -4,6 +4,7 @@ import { ArrowLeft, Shield, Trophy, Globe, Calendar } from "lucide-react";
 import { getJogadorPerfil } from "@/services";
 import type { JogadorPerfil } from "@/services";
 import { PlayerSeason } from "@/components/player-season";
+import { PlayerAvatarHero } from "@/components/player-avatar-hero";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +28,6 @@ const posLabel: Record<string, string> = {
   MF: "Meio-campista",
   FW: "Atacante",
 };
-
-function initials(nome: string): string {
-  const parts = nome.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export default async function PlayerProfilePage({
   params,
@@ -73,11 +68,7 @@ export default async function PlayerProfilePage({
         <div className={`h-20 bg-gradient-to-r ${gradient}`} />
         <div className="px-6 pb-6">
           {/* Avatar sobreposto à faixa */}
-          <div
-            className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center text-3xl font-bold shadow-md ring-4 ring-white -mt-12 mb-4`}
-          >
-            {initials(jogador.nome)}
-          </div>
+          <PlayerAvatarHero nome={jogador.nome} fotoUrl={jogador.foto_url} gradient={gradient} />
 
           {/* Identidade + resumo de carreira */}
           <div className="flex items-start justify-between gap-6 flex-wrap">

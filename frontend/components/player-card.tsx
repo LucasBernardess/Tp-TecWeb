@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
 
@@ -6,6 +9,7 @@ interface PlayerCardProps {
   squad: string;
   position: string;
   nationality?: string;
+  photoUrl?: string | null;
   stats?: { label: string; value: string | number }[];
   score?: number;
   rank?: number;
@@ -21,7 +25,35 @@ const posColors: Record<string, string> = {
   FW: "bg-red-100 text-red-700",
 };
 
-export function PlayerCard({ name, squad, position, nationality, stats, score, rank, onClick, href }: PlayerCardProps) {
+function initials(nome: string): string {
+  const parts = nome.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function PlayerAvatar({ name, photoUrl, posColor }: { name: string; photoUrl?: string | null; posColor: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (photoUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={photoUrl}
+        alt={name}
+        onError={() => setFailed(true)}
+        className="w-11 h-11 rounded-lg object-cover shrink-0 bg-gray-100"
+      />
+    );
+  }
+
+  return (
+    <div className={clsx("w-11 h-11 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold", posColor)}>
+      {initials(name)}
+    </div>
+  );
+}
+
+export function PlayerCard({ name, squad, position, nationality, photoUrl, stats, score, rank, onClick, href }: PlayerCardProps) {
   const pos = position?.split(",")[0]?.trim() ?? "—";
   const posColor = posColors[pos] ?? "bg-gray-100 text-gray-700";
   const clickable = Boolean(onClick || href);
@@ -40,6 +72,7 @@ export function PlayerCard({ name, squad, position, nationality, stats, score, r
             {rank}
           </span>
         )}
+        <PlayerAvatar name={name} photoUrl={photoUrl} posColor={posColor} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-semibold text-gray-900 truncate">{name}</p>

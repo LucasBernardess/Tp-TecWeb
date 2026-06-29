@@ -4,12 +4,16 @@ import { useState } from "react";
 import { Network, Sparkles, Loader2, Info } from "lucide-react";
 
 import { PlayerCard } from "@/components/player-card";
+import { Skeleton, PlayerListSkeleton } from "@/components/skeleton";
+import { useAuth } from "@/lib/authContext";
+import { recordHistory } from "@/lib/history";
 
 const EXAMPLES = ["Erling Haaland", "Kylian Mbappé", "Kevin De Bruyne", "Virgil van Dijk"];
 
 type Player = Record<string, string | number | null>;
 
 export default function RecommendPage() {
+  const { user } = useAuth();
   const [playerName, setPlayerName] = useState("");
   const [topK, setTopK] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -32,6 +36,7 @@ export default function RecommendPage() {
       if (!res.ok) throw new Error("Erro ao conectar ao serviço ML.");
       const data = await res.json();
       setResult(data);
+      recordHistory(user, name.trim(), "recommend").catch(() => {});
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
@@ -103,7 +108,15 @@ export default function RecommendPage() {
       )}
 
       {/* Result */}
-      {result && (
+      {loading && (
+        <div>
+          <Skeleton className="h-4 w-40 mb-2" />
+          <PlayerListSkeleton count={1} />
+          <Skeleton className="h-4 w-48 mt-6 mb-2" />
+          <PlayerListSkeleton count={topK > 5 ? 5 : topK} />
+        </div>
+      )}
+      {!loading && result && (
         <div>
           {/* Reference player */}
           {result.player && Object.keys(result.player).length > 0 && (
@@ -114,6 +127,7 @@ export default function RecommendPage() {
                 squad={String(result.player.Squad ?? "—")}
                 position={String(result.player.Pos ?? "—")}
                 nationality={result.player.Nation ? String(result.player.Nation) : undefined}
+                photoUrl={result.player.photo_url ? String(result.player.photo_url) : undefined}
                 stats={[
                   { label: "Gols", value: result.player.Gls ?? "—" },
                   { label: "Assist.", value: result.player.Ast ?? "—" },
@@ -136,6 +150,7 @@ export default function RecommendPage() {
                 squad={String(p.Squad ?? "—")}
                 position={String(p.Pos ?? "—")}
                 nationality={p.Nation ? String(p.Nation) : undefined}
+                photoUrl={p.photo_url ? String(p.photo_url) : undefined}
                 rank={i + 1}
                 score={typeof p.distance === "number" ? p.distance : undefined}
                 stats={[

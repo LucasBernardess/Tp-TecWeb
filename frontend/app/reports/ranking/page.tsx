@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Trophy, Loader2 } from "lucide-react";
+import { TableSkeleton } from "@/components/skeleton";
 
 type Player = Record<string, string | number | null>;
 
@@ -119,7 +120,8 @@ export default function RankingReportPage() {
       )}
 
       {/* Table */}
-      {generated && results.length > 0 && (
+      {loading && <TableSkeleton cols={9} />}
+      {!loading && generated && results.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900">

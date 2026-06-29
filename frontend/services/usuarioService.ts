@@ -19,6 +19,16 @@ export async function getUsuarioById(id: number) {
   return data as Usuario;
 }
 
+export async function getUsuarioByLogin(login: string) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("login", login)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Usuario) ?? null;
+}
+
 export async function createUsuario(usuario: Omit<Usuario, "id_usuario">) {
   const { data, error } = await supabase
     .from(TABLE)
