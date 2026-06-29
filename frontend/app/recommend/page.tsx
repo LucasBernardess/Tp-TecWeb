@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Network, Sparkles, Loader2, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Network, Sparkles, Loader2, Info, Search } from "lucide-react";
 
 import { PlayerCard } from "@/components/player-card";
 import { Skeleton, PlayerListSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
 import { recordHistory } from "@/lib/history";
+import { getJogadoresFiltrados, type JogadorListItem } from "@/services/jogadorService";
 
 const EXAMPLES = ["Erling Haaland", "Kylian Mbappé", "Kevin De Bruyne", "Virgil van Dijk"];
 
@@ -20,8 +21,100 @@ export default function RecommendPage() {
   const [result, setResult] = useState<{ player: Player; similar_players: Player[] } | null>(null);
   const [error, setError] = useState("");
 
+  const [suggestions, setSuggestions] = useState<JogadorListItem[]>([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const justSelectedRef = useRef(false);
+
+  useEffect(() => {
+    const term = playerName.trim();
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false;
+      return;
+    }
+    if (term.length < 2) {
+      setSuggestions([]);
+      setSuggestLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setSuggestLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const { jogadores } = await getJogadoresFiltrados({
+          nome: term,
+          limit: 8,
+          ordenarPor: "nome",
+        });
+        if (!cancelled) {
+          setSuggestions(jogadores);
+          setShowSuggestions(true);
+          setActiveIndex(-1);
+        }
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      } finally {
+        if (!cancelled) setSuggestLoading(false);
+      }
+    }, 220);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [playerName]);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  function selectSuggestion(j: JogadorListItem) {
+    justSelectedRef.current = true;
+    setPlayerName(j.nome);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setActiveIndex(-1);
+    handleRecommend(j.nome);
+  }
+
+  function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIndex((i) => (i + 1) % suggestions.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+        return;
+      }
+      if (e.key === "Escape") {
+        setShowSuggestions(false);
+        return;
+      }
+      if (e.key === "Enter" && activeIndex >= 0) {
+        e.preventDefault();
+        selectSuggestion(suggestions[activeIndex]);
+        return;
+      }
+    }
+    if (e.key === "Enter") {
+      setShowSuggestions(false);
+      handleRecommend();
+    }
+  }
+
   async function handleRecommend(name = playerName) {
     if (!name.trim()) return;
+    setShowSuggestions(false);
     setLoading(true);
     setError("");
     setResult(null);
@@ -59,14 +152,72 @@ export default function RecommendPage() {
       {/* Input */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
         <div className="flex gap-3">
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleRecommend()}
-            placeholder="Nome do jogador (ex: Erling Haaland)"
-            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-          />
+          <div ref={boxRef} className="relative flex-1">
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              placeholder="Nome do jogador (ex: Erling Haaland)"
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={showSuggestions}
+              aria-controls="player-suggestions"
+              aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            />
+
+            {showSuggestions && (suggestLoading || suggestions.length > 0) && (
+              <ul
+                id="player-suggestions"
+                role="listbox"
+                className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto"
+              >
+                {suggestLoading && suggestions.length === 0 && (
+                  <li className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400">
+                    <Loader2 size={14} className="animate-spin" /> Buscando…
+                  </li>
+                )}
+                {suggestions.map((j, i) => (
+                  <li
+                    key={j.id_jogador}
+                    id={`suggestion-${i}`}
+                    role="option"
+                    aria-selected={i === activeIndex}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      selectSuggestion(j);
+                    }}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    className={`flex items-center gap-3 px-3 py-2 cursor-pointer ${
+                      i === activeIndex ? "bg-brand-50" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    {j.foto_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={j.foto_url}
+                        alt=""
+                        className="w-7 h-7 rounded-full object-cover bg-gray-100 shrink-0"
+                      />
+                    ) : (
+                      <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500 shrink-0">
+                        {j.nome.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-medium text-gray-900 truncate">{j.nome}</span>
+                      <span className="block text-xs text-gray-400 truncate">
+                        {[j.clube, j.posicao].filter((s) => s && s !== "—").join(" · ") || "—"}
+                      </span>
+                    </span>
+                    <Search size={14} className="text-gray-300 shrink-0" />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <select
             value={topK}
             onChange={(e) => setTopK(Number(e.target.value))}
