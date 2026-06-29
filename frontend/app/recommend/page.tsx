@@ -8,6 +8,7 @@ import { Skeleton, PlayerListSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
 import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
 import { getJogadoresFiltrados, type JogadorListItem } from "@/services/jogadorService";
+import { getSimilaresPorNome } from "@/services/recomendacaoService";
 
 type Player = Record<string, string | number | null>;
 
@@ -131,14 +132,7 @@ export default function RecommendPage() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/ml/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player_name: name.trim(), top_k: topK }),
-      });
-      if (res.status === 404) throw new Error("Jogador não encontrado. Verifique o nome e tente novamente.");
-      if (!res.ok) throw new Error("Erro ao conectar ao serviço ML.");
-      const data = await res.json();
+      const data = await getSimilaresPorNome(name.trim(), topK);
       setResult(data);
       recordHistory(user, name.trim(), "recommend").then(loadRecent).catch(() => {});
     } catch (e: unknown) {

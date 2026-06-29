@@ -84,7 +84,7 @@ export default function SearchPage() {
             onChange={(e) => setTopK(Number(e.target.value))}
             className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
           >
-            {[5, 10, 20, 50].map((k) => (
+            {[5, 10, 20].map((k) => (
               <option key={k} value={k}>Top {k}</option>
             ))}
           </select>

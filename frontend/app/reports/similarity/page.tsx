@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GitCompareArrows, Loader2 } from "lucide-react";
 import { PlayerCard } from "@/components/player-card";
 import { Skeleton, PlayerListSkeleton, TableSkeleton } from "@/components/skeleton";
+import { getSimilaresPorNome } from "@/services/recomendacaoService";
 
 type Player = Record<string, string | number | null>;
 
@@ -31,11 +32,7 @@ export default function SimilarityReportPage() {
     setError("");
     setResult(null);
     try {
-      const qs = new URLSearchParams({ player_name: playerName.trim(), top_k: String(topK) });
-      const res = await fetch(`/api/ml/reports/similarity?${qs}`);
-      if (res.status === 404) throw new Error("Jogador não encontrado.");
-      if (!res.ok) throw new Error("Erro ao gerar relatório.");
-      setResult(await res.json());
+      setResult(await getSimilaresPorNome(playerName.trim(), topK));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
