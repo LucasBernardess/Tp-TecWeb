@@ -266,6 +266,8 @@ export default function PlayersPage() {
                 position={p.posicao ?? "—"}
                 nationality={p.nacionalidade ?? undefined}
                 photoUrl={p.foto_url}
+                escudoUrl={p.escudo_url}
+                bandeiraUrl={p.bandeira_url}
                 stats={[
                   { label: "Gols", value: p.gols ?? "—" },
                   { label: "Assist.", value: p.assistencias ?? "—" },

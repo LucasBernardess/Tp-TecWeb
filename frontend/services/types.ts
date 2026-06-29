@@ -15,12 +15,20 @@ export interface Liga {
   id_liga: number;
   nome: string;
   pais: string;
+  logo_url: string | null;
 }
 
 export interface Clube {
   id_clube: number;
   nome: string;
   id_liga: number | null;
+  escudo_url: string | null;
+}
+
+export interface Nacionalidade {
+  codigo: string;
+  nome: string | null;
+  bandeira_url: string | null;
 }
 
 export interface Jogador {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
+import { BadgeImg } from "@/components/badge-img";
 
 interface PlayerCardProps {
   name: string;
@@ -10,6 +11,8 @@ interface PlayerCardProps {
   position: string;
   nationality?: string;
   photoUrl?: string | null;
+  escudoUrl?: string | null;
+  bandeiraUrl?: string | null;
   stats?: { label: string; value: string | number }[];
   score?: number;
   rank?: number;
@@ -53,7 +56,7 @@ function PlayerAvatar({ name, photoUrl, posColor }: { name: string; photoUrl?: s
   );
 }
 
-export function PlayerCard({ name, squad, position, nationality, photoUrl, stats, score, rank, onClick, href }: PlayerCardProps) {
+export function PlayerCard({ name, squad, position, nationality, photoUrl, escudoUrl, bandeiraUrl, stats, score, rank, onClick, href }: PlayerCardProps) {
   const pos = position?.split(",")[0]?.trim() ?? "—";
   const posColor = posColors[pos] ?? "bg-gray-100 text-gray-700";
   const clickable = Boolean(onClick || href);
@@ -80,8 +83,16 @@ export function PlayerCard({ name, squad, position, nationality, photoUrl, stats
               {pos}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {squad}{nationality ? ` · ${nationality}` : ""}
+          <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <BadgeImg src={escudoUrl} alt={squad} className="w-4 h-4 object-contain shrink-0" />
+            <span>{squad}</span>
+            {nationality && (
+              <>
+                <span className="text-gray-300">·</span>
+                <BadgeImg src={bandeiraUrl} alt={nationality} className="w-4 h-3 object-cover rounded-sm shrink-0" />
+                <span>{nationality}</span>
+              </>
+            )}
           </p>
 
           {stats && stats.length > 0 && (

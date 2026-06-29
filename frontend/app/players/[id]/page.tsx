@@ -5,6 +5,7 @@ import { getJogadorPerfil } from "@/services";
 import type { JogadorPerfil } from "@/services";
 import { PlayerSeason } from "@/components/player-season";
 import { PlayerAvatarHero } from "@/components/player-avatar-hero";
+import { BadgeImg } from "@/components/badge-img";
 
 export const dynamic = "force-dynamic";
 
@@ -97,9 +98,20 @@ export default async function PlayerProfilePage({
 
           {/* Infos */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 border-t border-gray-100 pt-5">
-            <Info icon={Shield} label="Time" value={jogador.clube} />
-            <Info icon={Trophy} label="Liga" value={jogador.liga} sub={jogador.pais_liga} />
-            <Info icon={Globe} label="Nacionalidade" value={jogador.nacionalidade ?? "—"} />
+            <Info icon={Shield} label="Time" value={jogador.clube} imgUrl={jogador.escudo_url} />
+            <Info
+              icon={Trophy}
+              label="Liga"
+              value={jogador.liga}
+              sub={jogador.pais_liga}
+              imgUrl={jogador.logo_liga_url}
+            />
+            <Info
+              icon={Globe}
+              label="Nacionalidade"
+              value={jogador.nacionalidade ?? "—"}
+              imgUrl={jogador.bandeira_url}
+            />
             <Info
               icon={Calendar}
               label="Idade"
@@ -147,16 +159,23 @@ function Info({
   label,
   value,
   sub,
+  imgUrl,
 }: {
   icon: typeof Shield;
   label: string;
   value: string;
   sub?: string;
+  imgUrl?: string | null;
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+      <div className="relative w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center shrink-0 overflow-hidden">
         <Icon size={18} className="text-brand-600" />
+        <BadgeImg
+          src={imgUrl}
+          alt={value}
+          className="absolute inset-0 w-full h-full object-contain bg-white p-1"
+        />
       </div>
       <div className="min-w-0">
         <p className="text-xs text-gray-400">{label}</p>

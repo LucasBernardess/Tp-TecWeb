@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import type { Jogador, Estatistica } from "./types";
+import { getBandeirasPorCodigo } from "./nacionalidadeService";
 
 const TABLE = "JOGADOR";
 
@@ -14,6 +15,8 @@ export interface JogadorListItem {
   foto_url: string | null;
   clube: string;
   liga: string;
+  escudo_url: string | null;
+  bandeira_url: string | null;
   gols: number | null;
   assistencias: number | null;
   xg: number | null;
@@ -49,11 +52,19 @@ export interface JogadorPerfil {
   clube: string;
   liga: string;
   pais_liga: string;
+  escudo_url: string | null;
+  logo_liga_url: string | null;
+  bandeira_url: string | null;
   estatisticas: Estatistica[];
 }
 
-type EmbeddedLiga = { nome?: string; pais?: string };
-type EmbeddedClube = { nome?: string; id_liga?: number | null; LIGA?: EmbeddedLiga | EmbeddedLiga[] | null };
+type EmbeddedLiga = { nome?: string; pais?: string; logo_url?: string | null };
+type EmbeddedClube = {
+  nome?: string;
+  id_liga?: number | null;
+  escudo_url?: string | null;
+  LIGA?: EmbeddedLiga | EmbeddedLiga[] | null;
+};
 
 function first<T>(value: T | T[] | null | undefined): T | undefined {
   return Array.isArray(value) ? value[0] : value ?? undefined;
@@ -82,8 +93,8 @@ export async function getJogadoresFiltrados(
   // O filtro por liga precisa de join interno para descartar jogadores de outras ligas;
   // sem ele, mantemos o join à esquerda para não perder quem está sem clube.
   const clubeEmbed = idLiga
-    ? "CLUBE!inner(nome,id_liga,LIGA(nome,pais))"
-    : "CLUBE(nome,id_liga,LIGA(nome,pais))";
+    ? "CLUBE!inner(nome,escudo_url,id_liga,LIGA(nome,pais))"
+    : "CLUBE(nome,escudo_url,id_liga,LIGA(nome,pais))";
 
   let query = supabase
     .from(TABLE)
@@ -124,11 +135,24 @@ export async function getJogadoresFiltrados(
       foto_url: (r.foto_url as string | null) ?? null,
       clube: clube?.nome ?? "—",
       liga: liga?.nome ?? "—",
+      escudo_url: clube?.escudo_url ?? null,
+      bandeira_url: null,
       gols: est?.gols ?? null,
       assistencias: est?.assistencias ?? null,
       xg: est?.xg ?? null,
     };
   });
+
+  const codigos = jogadores
+    .map((j) => j.nacionalidade)
+    .filter((c): c is string => Boolean(c));
+  try {
+    const bandeiras = await getBandeirasPorCodigo(codigos);
+    for (const j of jogadores) {
+      if (j.nacionalidade) j.bandeira_url = bandeiras[j.nacionalidade] ?? null;
+    }
+  } catch {
+  }
 
   return { jogadores, total: count ?? 0 };
 }
@@ -137,7 +161,7 @@ export async function getJogadoresFiltrados(
 export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*,CLUBE(nome,id_liga,LIGA(nome,pais)),ESTATISTICA(*)")
+    .select("*,CLUBE(nome,escudo_url,id_liga,LIGA(nome,pais,logo_url)),ESTATISTICA(*)")
     .eq("id_jogador", id)
     .single();
   if (error) throw error;
@@ -149,10 +173,19 @@ export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
     Array.isArray(r.ESTATISTICA) ? r.ESTATISTICA : r.ESTATISTICA ? [r.ESTATISTICA] : []
   ) as Estatistica[];
 
+  const nacionalidade = (r.nacionalidade as string | null) ?? null;
+  let bandeira_url: string | null = null;
+  if (nacionalidade) {
+    try {
+      const bandeiras = await getBandeirasPorCodigo([nacionalidade]);
+      bandeira_url = bandeiras[nacionalidade] ?? null;
+    } catch {}
+  }
+
   return {
     id_jogador: Number(r.id_jogador),
     nome: String(r.nome ?? "—"),
-    nacionalidade: (r.nacionalidade as string | null) ?? null,
+    nacionalidade,
     idade: (r.idade as number | null) ?? null,
     ano_nascimento: (r.ano_nascimento as number | null) ?? null,
     posicao: (r.posicao as string | null) ?? null,
@@ -161,6 +194,9 @@ export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
     clube: clube?.nome ?? "—",
     liga: liga?.nome ?? "—",
     pais_liga: liga?.pais ?? "—",
+    escudo_url: clube?.escudo_url ?? null,
+    logo_liga_url: liga?.logo_url ?? null,
+    bandeira_url,
     estatisticas,
   };
 }

@@ -3,6 +3,7 @@ export * from "./usuarioService";
 export * from "./pesquisaService";
 export * from "./ligaService";
 export * from "./clubeService";
+export * from "./nacionalidadeService";
 export * from "./jogadorService";
 export * from "./estatisticaService";
 export * from "./overviewService";
