@@ -1,22 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy, Loader2, FileDown } from "lucide-react";
 import { TableSkeleton } from "@/components/skeleton";
+import { getRanking, RANKING_METRICS, type RankingMetric } from "@/services/rankingService";
+import { generateRankingReport } from "@/lib/rankingReport";
 
 type Player = Record<string, string | number | null>;
 
-const METRICS = [
-  { value: "Gls",  label: "Gols" },
-  { value: "Ast",  label: "Assistências" },
-  { value: "xG",   label: "xG" },
-  { value: "xAG",  label: "xAG" },
-  { value: "PrgC", label: "Progressão (conduções)" },
-  { value: "PrgP", label: "Progressão (passes)" },
-  { value: "PrgR", label: "Progressão (recepções)" },
-  { value: "Min",  label: "Minutos" },
-  { value: "MP",   label: "Partidas" },
-];
+const METRICS = RANKING_METRICS;
 
 const POSITIONS = [
   { value: "",   label: "Todas" },
@@ -39,21 +31,28 @@ export default function RankingReportPage() {
     setLoading(true);
     setError("");
     try {
-      const qs = new URLSearchParams({ metric, top_k: String(topK) });
-      if (position) qs.set("position", position);
-      const res = await fetch(`/api/ml/reports/ranking?${qs}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setResults(data.results ?? []);
+      const ranking = await getRanking(metric as RankingMetric, topK, position || undefined);
+      setResults(ranking);
       setGenerated(true);
     } catch {
-      setError("Erro ao gerar relatório. Verifique se o ml-service está rodando.");
+      setError("Erro ao gerar relatório. Não foi possível carregar as estatísticas.");
     } finally {
       setLoading(false);
     }
   }, [metric, position, topK]);
 
   const metricLabel = METRICS.find((m) => m.value === metric)?.label ?? metric;
+  const positionLabel = POSITIONS.find((p) => p.value === position)?.label;
+
+  function handleDownloadReport() {
+    if (results.length === 0) return;
+    generateRankingReport({
+      results,
+      metricKey: metric,
+      metricLabel,
+      positionLabel: position ? positionLabel : undefined,
+    });
+  }
 
   return (
     <div className="p-8 max-w-5xl">
@@ -113,6 +112,15 @@ export default function RankingReportPage() {
           {loading ? <Loader2 size={15} className="animate-spin" /> : <Trophy size={15} />}
           Gerar Relatório
         </button>
+        {!loading && generated && results.length > 0 && (
+          <button
+            onClick={handleDownloadReport}
+            className="flex items-center gap-2 border border-brand-200 text-brand-700 bg-brand-50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors"
+          >
+            <FileDown size={15} />
+            Baixar PDF
+          </button>
+        )}
       </div>
 
       {error && (

@@ -8,3 +8,4 @@ export * from "./jogadorService";
 export * from "./estatisticaService";
 export * from "./overviewService";
 export * from "./recomendacaoService";
+export * from "./rankingService";
