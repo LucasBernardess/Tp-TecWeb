@@ -22,7 +22,6 @@ export interface OverviewData {
   top_assists: OverviewPlayer[];
 }
 
-// Posições exibidas no dashboard (a primeira sigla da coluna `posicao` define o bucket).
 const POSITIONS = ["FW", "MF", "DF", "GK"] as const;
 const PAGE_SIZE = 1000;
 
@@ -41,8 +40,6 @@ function buildCountQuery(table: string) {
   return supabase.from(table).select("*", { count: "exact", head: true });
 }
 
-// Conta nacionalidades distintas. Supabase limita a 1000 linhas por request,
-// então paginamos apenas a coluna `nacionalidade` e deduplicamos em memória.
 async function countNations(totalPlayers: number): Promise<number> {
   const pages = Math.max(1, Math.ceil(totalPlayers / PAGE_SIZE));
   const requests = Array.from({ length: pages }, (_, i) =>

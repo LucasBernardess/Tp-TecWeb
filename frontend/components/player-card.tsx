@@ -17,7 +17,6 @@ interface PlayerCardProps {
   score?: number;
   rank?: number;
   onClick?: () => void;
-  /** Quando informado, o card vira um link de navegação (ex.: perfil do jogador). */
   href?: string;
 }
 
@@ -98,7 +97,6 @@ function PlayerAvatar({
 
   if (photoUrl && !failed) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={photoUrl}
         alt={name}

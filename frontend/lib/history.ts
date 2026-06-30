@@ -45,7 +45,7 @@ export async function recordHistory(
     const ofType = all
       .map((r) => ({ id_pesquisa: r.id_pesquisa, data_hora: r.data_hora, decoded: decode(r.termo) }))
       .filter((r) => r.decoded?.tipo === tipo)
-      .sort((a, b) => b.data_hora.localeCompare(a.data_hora)); // mais novos primeiro
+      .sort((a, b) => b.data_hora.localeCompare(a.data_hora)); 
 
     const toDelete: number[] = [];
     const seen = new Set<string>();
@@ -53,7 +53,6 @@ export async function recordHistory(
     for (const r of ofType) {
       const t = r.decoded!.termo.toLowerCase();
       if (seen.has(t) || seen.size >= MAX_PER_TYPE) {
-        // duplicata ou excede limite → marca para exclusão
         toDelete.push(r.id_pesquisa);
       } else {
         seen.add(t);

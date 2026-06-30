@@ -56,7 +56,6 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         collapsed ? "w-16" : "w-60"
       )}
     >
-      {/* Logo */}
       <div
         className={clsx(
           "flex items-center gap-2 px-4 py-5 border-b border-zinc-700 overflow-hidden",
@@ -73,7 +72,6 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 space-y-0.5 px-2">
         {nav.map((item, i) => {
           if (item.type === "divider") {
@@ -112,7 +110,6 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* Usuário */}
       <div className="border-t border-zinc-700 p-3">
         {user ? (
           <div className={clsx("flex items-center gap-2", collapsed && "flex-col")}>
@@ -151,7 +148,6 @@ export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
         )}
       </div>
 
-      {/* Toggle button */}
       <div className="border-t border-zinc-700 p-3">
         <button
           onClick={onToggle}

@@ -19,7 +19,6 @@ export function PlayerAvatarHero({ nome, fotoUrl, gradient }: PlayerAvatarHeroPr
 
   if (fotoUrl && !failed) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={fotoUrl}
         alt={nome}

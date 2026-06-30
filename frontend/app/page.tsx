@@ -13,7 +13,6 @@ export default async function HomePage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <LayoutDashboard size={22} className="text-brand-600" />
@@ -22,7 +21,6 @@ export default async function HomePage() {
         <p className="text-gray-500">Visão geral · 10 grandes ligas · Temporada 2024-25</p>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <StatCard label="Total de Jogadores" value={d.total_players.toLocaleString("pt-BR")} icon={Users} color="green" />
         <StatCard label="Times" value={d.total_teams} icon={Shield} color="blue" />
@@ -30,7 +28,6 @@ export default async function HomePage() {
         <StatCard label="Ligas" value={d.total_leagues} icon={Trophy} color="orange" sub="Principais ligas do mundo" />
       </div>
 
-      {/* Position breakdown */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-8">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
           Distribuição por Posição
@@ -57,7 +54,6 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Top scorers + Top assists */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">

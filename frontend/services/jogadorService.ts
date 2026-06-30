@@ -23,7 +23,6 @@ export interface JogadorListItem {
 }
 
 export interface JogadorFiltros {
-  /** Busca por nome (case-insensitive, substring). */
   nome?: string;
   /** Prefixo da posição: "FW" | "MF" | "DF" | "GK". */
   posicao?: string;
@@ -39,7 +38,6 @@ export interface JogadoresPagina {
   total: number;
 }
 
-/** Perfil completo de um jogador: dados pessoais + clube/liga + todas as temporadas. */
 export interface JogadorPerfil {
   id_jogador: number;
   nome: string;
@@ -76,7 +74,6 @@ export async function getJogadores() {
   return data as Jogador[];
 }
 
-/** Lista jogadores aplicando filtros combináveis, com paginação e total para a UI. */
 export async function getJogadoresFiltrados(
   filtros: JogadorFiltros = {}
 ): Promise<JogadoresPagina> {
@@ -90,8 +87,6 @@ export async function getJogadoresFiltrados(
     offset = 0,
   } = filtros;
 
-  // O filtro por liga precisa de join interno para descartar jogadores de outras ligas;
-  // sem ele, mantemos o join à esquerda para não perder quem está sem clube.
   const clubeEmbed = idLiga
     ? "CLUBE!inner(nome,escudo_url,id_liga,LIGA(nome,pais))"
     : "CLUBE(nome,escudo_url,id_liga,LIGA(nome,pais))";
@@ -157,7 +152,6 @@ export async function getJogadoresFiltrados(
   return { jogadores, total: count ?? 0 };
 }
 
-/** Retorna o perfil completo de um jogador (dados + clube/liga + estatísticas). */
 export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
   const { data, error } = await supabase
     .from(TABLE)

@@ -33,7 +33,6 @@ function fmt(v: number, digits = 0): string {
   });
 }
 
-/** Estatística por 90 minutos. */
 function per90(value: number, minutos: number): number {
   return minutos > 0 ? (value / minutos) * 90 : 0;
 }
@@ -55,13 +54,11 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
       ? (num(est.penaltis) / num(est.penaltis_tentados)) * 100
       : null;
 
-  // Esperado vs. realizado — mostra se o jogador supera ou fica abaixo do esperado.
   const expData = [
     { nome: "Gols", esperado: Number(xg.toFixed(2)), real: gols },
     { nome: "Assist.", esperado: Number(xag.toFixed(2)), real: assist },
   ];
 
-  // Ações progressivas (carregar a bola para frente).
   const progData = [
     { nome: "Conduções", valor: num(est.conducoes_prog) },
     { nome: "Passes", valor: num(est.passes_prog) },
@@ -89,8 +86,6 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
     },
   ];
 
-  // Rótulos amigáveis: o termo técnico (xG, npxG, xAG) vai entre parênteses
-  // para quem conhece, mas a descrição principal é em linguagem simples.
   const detalhes: { label: string; hint?: string; value: string }[] = [
     { label: "Jogos como titular", value: fmt(num(est.titular)) },
     { label: "Gols (sem pênaltis)", value: fmt(num(est.gols_sem_penalti)) },
@@ -130,7 +125,6 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
         </span>
       </div>
 
-      {/* Destaques */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {destaques.map((d) => {
           const Icon = d.icon;
@@ -146,7 +140,6 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
         })}
       </div>
 
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="rounded-lg border border-gray-100 p-4">
           <p className="text-sm font-semibold text-gray-700 mb-1">Esperado vs. Realizado</p>
@@ -204,7 +197,6 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
         </div>
       </div>
 
-      {/* Métricas derivadas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {derivados.map((d) => (
           <div key={d.label} className="rounded-lg bg-gray-50 p-3">
@@ -214,7 +206,6 @@ export function PlayerSeason({ est }: { est: Estatistica }) {
         ))}
       </div>
 
-      {/* Detalhes completos */}
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
           Estatísticas detalhadas

@@ -56,18 +56,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // signin fields
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  // signup fields
   const [nome, setNome] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [signupSenha, setSignupSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
 
-  // field-level errors
   const [ferrors, setFerrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -138,7 +135,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-gray-50">
-      {/* Painel informativo */}
       <div className="hidden lg:flex flex-col justify-center bg-zinc-900 text-white p-12">
         <div className="flex items-center gap-3 mb-6">
           <svg width={36} height={36} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,10 +162,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Formulário */}
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
-          {/* Branding mobile */}
           <div className="lg:hidden flex items-center gap-2 mb-6">
             <svg width={28} height={28} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="32" height="32" rx="8" fill="#16a34a" />
@@ -242,7 +236,6 @@ export default function LoginPage() {
               </>
             )}
 
-            {/* ── CRIAR CONTA ── */}
             {mode === "signup" && (
               <>
                 <h1 className="text-xl font-bold text-gray-900 mb-1">Criar conta</h1>
