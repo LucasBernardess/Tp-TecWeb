@@ -39,6 +39,8 @@ BUCKET_METRICS = [("Gls", "goals"), ("Ast", "assists"), ("xG", "expected_goals")
                   ("PrgP", "progressive_passes"), ("PrgR", "progressive_receptions"),
                   ("Min", "minutes_played")]
 
+MIN_FULL_MATCHES = 10.0
+
 
 def tokenize(text: str) -> list[str]:
     return [t for t in TOKEN_PATTERN.findall(str(text).casefold()) if t not in STOPWORDS]
@@ -218,10 +220,16 @@ class SearchService:
                 scores[doc_idx] += idf * (tf * (self.k1 + 1)) / denom
                 matched[doc_idx] += 1
 
-        ranked = sorted(scores, key=lambda d: (matched[d], scores[d]), reverse=True)[:max(top_k, 0)]
+        ranked = sorted(scores, key=lambda d: (matched[d], scores[d]), reverse=True)
+        limit = max(top_k, 0)
         results = []
         for doc_idx in ranked:
-            item = dict(self.rows[doc_idx])
+            if len(results) >= limit:
+                break
+            row = self.rows[doc_idx]
+            if to_float(row.get("90s")) <= MIN_FULL_MATCHES:
+                continue
+            item = dict(row)
             item["score"] = round(scores[doc_idx], 4)
             results.append(item)
         return results
