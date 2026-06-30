@@ -120,11 +120,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 "flex items-center gap-2 flex-1 min-w-0",
                 collapsed && "flex-col"
               )}
-              title={user.login}
+              title={user.email}
             >
               <UserCircle size={20} className="text-zinc-400 shrink-0" />
               {!collapsed && (
-                <span className="text-sm text-zinc-200 truncate">{user.login}</span>
+                <span className="text-sm text-zinc-200 truncate">{user.nome ?? user.email}</span>
               )}
             </div>
             <button

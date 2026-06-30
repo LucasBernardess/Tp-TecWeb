@@ -49,7 +49,6 @@ export default async function PlayerProfilePage({
   const posColor = posColors[pos] ?? "bg-gray-100 text-gray-700";
   const gradient = posGradient[pos] ?? "from-gray-500 to-gray-700";
 
-  // Totais de carreira (soma de todas as temporadas) para o resumo do topo.
   const totalGols = jogador.estatisticas.reduce((s, e) => s + (e.gols ?? 0), 0);
   const totalAssist = jogador.estatisticas.reduce((s, e) => s + (e.assistencias ?? 0), 0);
   const totalPartidas = jogador.estatisticas.reduce((s, e) => s + (e.partidas ?? 0), 0);
@@ -71,7 +70,6 @@ export default async function PlayerProfilePage({
           {/* Avatar sobreposto à faixa */}
           <PlayerAvatarHero nome={jogador.nome} fotoUrl={jogador.foto_url} gradient={gradient} />
 
-          {/* Identidade + resumo de carreira */}
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">

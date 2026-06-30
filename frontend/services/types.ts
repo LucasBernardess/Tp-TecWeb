@@ -2,6 +2,7 @@ export interface Usuario {
   id_usuario: number;
   login: string;
   senha: string;
+  nome: string | null;
 }
 
 export interface Pesquisa {

@@ -27,12 +27,15 @@ export default function RankingReportPage() {
   const [generated, setGenerated] = useState(false);
   const [error, setError] = useState("");
 
+  const [applied, setApplied] = useState({ metric: "Gls", position: "" });
+
   const generate = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const ranking = await getRanking(metric as RankingMetric, topK, position || undefined);
       setResults(ranking);
+      setApplied({ metric, position });
       setGenerated(true);
     } catch {
       setError("Erro ao gerar relatório. Não foi possível carregar as estatísticas.");
@@ -41,16 +44,16 @@ export default function RankingReportPage() {
     }
   }, [metric, position, topK]);
 
-  const metricLabel = METRICS.find((m) => m.value === metric)?.label ?? metric;
-  const positionLabel = POSITIONS.find((p) => p.value === position)?.label;
+  const appliedMetricLabel = METRICS.find((m) => m.value === applied.metric)?.label ?? applied.metric;
+  const appliedPositionLabel = POSITIONS.find((p) => p.value === applied.position)?.label;
 
   function handleDownloadReport() {
     if (results.length === 0) return;
     generateRankingReport({
       results,
-      metricKey: metric,
-      metricLabel,
-      positionLabel: position ? positionLabel : undefined,
+      metricKey: applied.metric,
+      metricLabel: appliedMetricLabel,
+      positionLabel: applied.position ? appliedPositionLabel : undefined,
     });
   }
 
@@ -133,8 +136,8 @@ export default function RankingReportPage() {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900">
-              Top {results.length} · {metricLabel}
-              {position && ` · ${POSITIONS.find((p) => p.value === position)?.label}`}
+              Top {results.length} · {appliedMetricLabel}
+              {applied.position && ` · ${appliedPositionLabel}`}
             </h2>
           </div>
           <div className="overflow-x-auto">
@@ -146,7 +149,7 @@ export default function RankingReportPage() {
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500">Time</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500">Pos</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500">Idade</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right">{metricLabel}</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right">{appliedMetricLabel}</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right">Gols</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right">Assist.</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right">Part.</th>
@@ -161,7 +164,7 @@ export default function RankingReportPage() {
                     <td className="px-4 py-3 text-gray-500">{String(p.Pos ?? "—")}</td>
                     <td className="px-4 py-3 text-gray-500">{p.Age ?? "—"}</td>
                     <td className="px-4 py-3 text-right font-bold text-brand-700">
-                      {p[metric] ?? "—"}
+                      {p[applied.metric] ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-600">{p.Gls ?? "—"}</td>
                     <td className="px-4 py-3 text-right text-gray-600">{p.Ast ?? "—"}</td>

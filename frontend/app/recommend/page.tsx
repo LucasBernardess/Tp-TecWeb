@@ -206,7 +206,6 @@ export default function RecommendPage() {
                     }`}
                   >
                     {j.foto_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={j.foto_url}
                         alt=""
