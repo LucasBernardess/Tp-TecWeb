@@ -6,6 +6,7 @@ import { PlayerCard } from "@/components/player-card";
 import { PlayerListSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
 import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
+import { getIdMapByNomes } from "@/services/jogadorService";
 
 type Player = Record<string, string | number | null>;
 
@@ -15,6 +16,7 @@ export default function SearchPage() {
   const [topK, setTopK] = useState(10);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Player[]>([]);
+  const [idMap, setIdMap] = useState<Map<string, number>>(new Map());
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
   const [recent, setRecent] = useState<HistoryEntry[]>([]);
@@ -45,7 +47,10 @@ export default function SearchPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setResults(data.results ?? []);
+      const players: Player[] = data.results ?? [];
+      setResults(players);
+      const names = players.map((p) => String(p.Player ?? "")).filter(Boolean);
+      getIdMapByNomes(names).then(setIdMap).catch(() => {});
       recordHistory(user, q.trim(), "search").then(loadRecent).catch(() => {});
     } catch {
       setError("Não foi possível conectar ao serviço ML. Certifique-se de que o ml-service está rodando.");
@@ -151,6 +156,7 @@ export default function SearchPage() {
               {results.map((p, i) => (
                 <PlayerCard
                   key={i}
+                  href={idMap.get(String(p.Player ?? "")) ? `/players/${idMap.get(String(p.Player ?? ""))}` : undefined}
                   name={String(p.Player ?? "—")}
                   squad={String(p.Squad ?? "—")}
                   position={String(p.Pos ?? "—")}

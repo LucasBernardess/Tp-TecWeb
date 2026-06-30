@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Shield, Trophy, Globe, Calendar } from "lucide-react";
+import { Shield, Trophy, Globe, Calendar } from "lucide-react";
 import { getJogadorPerfil } from "@/services";
 import type { JogadorPerfil } from "@/services";
 import { PlayerSeason } from "@/components/player-season";
 import { PlayerAvatarHero } from "@/components/player-avatar-hero";
 import { BadgeImg } from "@/components/badge-img";
+import { BackButton } from "@/components/back-button";
 
 export const dynamic = "force-dynamic";
 
@@ -55,13 +55,7 @@ export default async function PlayerProfilePage({
 
   return (
     <div className="p-8">
-      {/* Voltar */}
-      <Link
-        href="/players"
-        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-600 transition-colors mb-6"
-      >
-        <ArrowLeft size={16} /> Voltar para Jogadores
-      </Link>
+      <BackButton />
 
       {/* Hero */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">

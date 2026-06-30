@@ -131,6 +131,17 @@ export default function RankingReportPage() {
       )}
 
       {/* Table */}
+      {!loading && !generated && !error && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <Trophy size={28} className="text-gray-300" />
+          </div>
+          <p className="text-gray-700 font-medium mb-1">Configure e gere o ranking</p>
+          <p className="text-sm text-gray-400 max-w-xs">
+            Selecione a métrica, posição e quantidade de jogadores, depois clique em "Gerar Relatório".
+          </p>
+        </div>
+      )}
       {loading && <TableSkeleton cols={9} />}
       {!loading && generated && results.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

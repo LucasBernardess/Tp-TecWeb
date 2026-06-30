@@ -7,7 +7,7 @@ import { PlayerCard } from "@/components/player-card";
 import { Skeleton, PlayerListSkeleton, PlayerGridSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
 import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
-import { getJogadoresFiltrados, type JogadorListItem } from "@/services/jogadorService";
+import { getJogadoresFiltrados, getIdMapByNomes, type JogadorListItem } from "@/services/jogadorService";
 import { getSimilaresPorNome } from "@/services/recomendacaoService";
 import { generateSimilarityReport } from "@/lib/similarityReport";
 
@@ -19,6 +19,7 @@ export default function RecommendPage() {
   const [topK, setTopK] = useState(10);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ player: Player; similar_players: Player[] } | null>(null);
+  const [idMap, setIdMap] = useState<Map<string, number>>(new Map());
   const [error, setError] = useState("");
   const [recent, setRecent] = useState<HistoryEntry[]>([]);
 
@@ -140,6 +141,11 @@ export default function RecommendPage() {
     try {
       const data = await getSimilaresPorNome(name.trim(), topK);
       setResult(data);
+      const allNames = [
+        data.player ? String(data.player.Player ?? "") : "",
+        ...data.similar_players.map((p) => String(p.Player ?? "")),
+      ].filter(Boolean);
+      getIdMapByNomes(allNames).then(setIdMap).catch(() => {});
       recordHistory(user, name.trim(), "recommend").then(loadRecent).catch(() => {});
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro inesperado.");
@@ -310,6 +316,7 @@ export default function RecommendPage() {
             <div className="mb-6">
               <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Jogador de Referência</p>
               <PlayerCard
+                href={idMap.get(String(result.player.Player ?? "")) ? `/players/${idMap.get(String(result.player.Player ?? ""))}` : undefined}
                 name={String(result.player.Player ?? "—")}
                 squad={String(result.player.Squad ?? "—")}
                 position={String(result.player.Pos ?? "—")}
@@ -333,6 +340,7 @@ export default function RecommendPage() {
             {result.similar_players.map((p, i) => (
               <PlayerCard
                 key={i}
+                href={idMap.get(String(p.Player ?? "")) ? `/players/${idMap.get(String(p.Player ?? ""))}` : undefined}
                 name={String(p.Player ?? "—")}
                 squad={String(p.Squad ?? "—")}
                 position={String(p.Pos ?? "—")}

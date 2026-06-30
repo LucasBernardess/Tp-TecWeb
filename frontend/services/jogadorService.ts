@@ -201,6 +201,18 @@ export async function getJogadorPerfil(id: number): Promise<JogadorPerfil> {
   };
 }
 
+export async function getIdMapByNomes(nomes: string[]): Promise<Map<string, number>> {
+  if (nomes.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("id_jogador,nome")
+    .in("nome", nomes);
+  if (error) throw error;
+  const map = new Map<string, number>();
+  for (const r of data ?? []) map.set(r.nome, r.id_jogador);
+  return map;
+}
+
 export async function getJogadorById(id: number) {
   const { data, error } = await supabase
     .from(TABLE)
