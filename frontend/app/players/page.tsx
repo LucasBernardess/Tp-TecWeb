@@ -28,14 +28,12 @@ const LIMIT = 30;
 export default function PlayersPage() {
   const { user } = useAuth();
 
-  // Filtros (estado "em edição" — só são aplicados ao clicar em Filtrar)
   const [nome, setNome] = useState("");
   const [position, setPosition] = useState("");
   const [idClube, setIdClube] = useState("");
   const [idLiga, setIdLiga] = useState("");
   const [ordenarPor, setOrdenarPor] = useState<"nome" | "idade">("nome");
 
-  // Filtros efetivamente aplicados na consulta
   const [applied, setApplied] = useState({
     nome: "",
     position: "",
@@ -50,7 +48,6 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Opções dos selects de clube/liga
   const [clubes, setClubes] = useState<Clube[]>([]);
   const [ligas, setLigas] = useState<Liga[]>([]);
 
@@ -67,7 +64,6 @@ export default function PlayersPage() {
     loadRecent();
   }, [loadRecent]);
 
-  // Autocomplete do campo de nome
   const [suggestions, setSuggestions] = useState<JogadorListItem[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -158,7 +154,6 @@ export default function PlayersPage() {
     }
   }
 
-  // Carrega as opções de filtro uma única vez
   useEffect(() => {
     (async () => {
       try {
@@ -166,7 +161,6 @@ export default function PlayersPage() {
         setClubes(cs.sort((a, b) => a.nome.localeCompare(b.nome)));
         setLigas(ls.sort((a, b) => a.nome.localeCompare(b.nome)));
       } catch {
-        // Filtros de clube/liga ficam indisponíveis, mas a listagem segue funcionando.
       }
     })();
   }, []);
@@ -284,7 +278,6 @@ export default function PlayersPage() {
                     }`}
                   >
                     {j.foto_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={j.foto_url}
                         alt=""

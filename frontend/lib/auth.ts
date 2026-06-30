@@ -2,7 +2,8 @@ import { createUsuario, getUsuarioByLogin } from "@/services/usuarioService";
 
 export interface AuthUser {
   id_usuario: number;
-  login: string;
+  email: string;
+  nome: string | null;
 }
 
 const STORAGE_KEY = "futanalytics_user";
@@ -15,24 +16,40 @@ async function hashSenha(senha: string): Promise<string> {
     .join("");
 }
 
-export async function signUp(login: string, senha: string): Promise<AuthUser> {
-  const existing = await getUsuarioByLogin(login);
-  if (existing) throw new Error("Esse login já está em uso.");
+export async function signUp(
+  nome: string,
+  email: string,
+  senha: string
+): Promise<AuthUser> {
+  const existing = await getUsuarioByLogin(email.toLowerCase());
+  if (existing) throw new Error("Esse e-mail já está cadastrado.");
 
   const senhaHash = await hashSenha(senha);
-  const usuario = await createUsuario({ login, senha: senhaHash });
-  const user: AuthUser = { id_usuario: usuario.id_usuario, login: usuario.login };
+  const usuario = await createUsuario({
+    login: email.toLowerCase(),
+    senha: senhaHash,
+    nome: nome.trim() || null,
+  });
+  const user: AuthUser = {
+    id_usuario: usuario.id_usuario,
+    email: usuario.login,
+    nome: usuario.nome,
+  };
   persistUser(user);
   return user;
 }
 
-export async function signIn(login: string, senha: string): Promise<AuthUser> {
-  const usuario = await getUsuarioByLogin(login);
+export async function signIn(email: string, senha: string): Promise<AuthUser> {
+  const usuario = await getUsuarioByLogin(email.toLowerCase());
   const senhaHash = await hashSenha(senha);
   if (!usuario || usuario.senha !== senhaHash) {
-    throw new Error("Login ou senha incorretos.");
+    throw new Error("E-mail ou senha incorretos.");
   }
-  const user: AuthUser = { id_usuario: usuario.id_usuario, login: usuario.login };
+  const user: AuthUser = {
+    id_usuario: usuario.id_usuario,
+    email: usuario.login,
+    nome: usuario.nome,
+  };
   persistUser(user);
   return user;
 }
