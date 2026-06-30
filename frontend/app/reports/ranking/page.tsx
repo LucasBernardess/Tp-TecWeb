@@ -58,7 +58,7 @@ export default function RankingReportPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <Trophy size={22} className="text-brand-600" />

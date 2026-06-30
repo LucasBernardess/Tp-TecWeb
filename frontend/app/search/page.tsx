@@ -57,27 +57,27 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
-      <div className="mb-8">
+    <div className="p-4 md:p-8">
+      <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
           <Search size={22} className="text-brand-600" />
           <h1 className="text-2xl font-bold text-gray-900">Busca por Perfil</h1>
         </div>
         <p className="text-gray-500">
-          Descreva o perfil desejado em linguagem natural. O sistema usa BM25 para encontrar os melhores candidatos.
+          Descreva em linguagem natural o tipo de jogador que procura. O sistema usa busca textual (BM25) para encontrar os melhores candidatos.
         </p>
       </div>
 
       {/* Search Input */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-        <div className="flex gap-3">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5 mb-6">
+        <div className="flex flex-wrap gap-3">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             placeholder="Ex: atacante veloz com alto xG e progressão..."
-            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="flex-1 min-w-[200px] border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
           <select
             value={topK}
@@ -126,36 +126,48 @@ export default function SearchPage() {
       )}
 
       {/* Results */}
+      {!loading && !searched && !error && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <Search size={28} className="text-gray-300" />
+          </div>
+          <p className="text-gray-700 font-medium mb-1">Descreva o jogador que procura</p>
+          <p className="text-sm text-gray-400 max-w-xs">
+            Use linguagem natural, como "atacante veloz com alto xG" ou "goleiro com muitas defesas".
+          </p>
+        </div>
+      )}
       {loading && <PlayerListSkeleton count={topK > 5 ? 5 : topK} />}
       {!loading && searched && !error && (
         <div>
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-gray-500 mb-4">
             {results.length} resultado{results.length !== 1 ? "s" : ""} para{" "}
             <span className="font-medium text-gray-800">"{query}"</span>
           </p>
-          <div className="space-y-2">
-            {results.map((p, i) => (
-              <PlayerCard
-                key={i}
-                name={String(p.Player ?? "—")}
-                squad={String(p.Squad ?? "—")}
-                position={String(p.Pos ?? "—")}
-                nationality={p.Nation ? String(p.Nation) : undefined}
-                photoUrl={p.photo_url ? String(p.photo_url) : undefined}
-                rank={i + 1}
-                score={typeof p.score === "number" ? p.score : undefined}
-                stats={[
-                  { label: "Gols", value: p.Gls ?? "—" },
-                  { label: "Assist.", value: p.Ast ?? "—" },
-                  { label: "xG", value: p.xG ?? "—" },
-                  { label: "Min", value: p.Min ?? "—" },
-                ]}
-              />
-            ))}
-            {results.length === 0 && (
-              <p className="text-gray-400 text-sm">Nenhum resultado encontrado.</p>
-            )}
-          </div>
+          {results.length === 0 ? (
+            <p className="text-gray-400 text-sm">Nenhum resultado encontrado.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {results.map((p, i) => (
+                <PlayerCard
+                  key={i}
+                  name={String(p.Player ?? "—")}
+                  squad={String(p.Squad ?? "—")}
+                  position={String(p.Pos ?? "—")}
+                  nationality={p.Nation ? String(p.Nation) : undefined}
+                  photoUrl={p.photo_url ? String(p.photo_url) : undefined}
+                  rank={i + 1}
+                  score={typeof p.score === "number" ? p.score : undefined}
+                  stats={[
+                    { label: "Gols", value: p.Gls ?? "—" },
+                    { label: "Assist.", value: p.Ast ?? "—" },
+                    { label: "xG", value: p.xG ?? "—" },
+                    { label: "Min", value: p.Min ?? "—" },
+                  ]}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

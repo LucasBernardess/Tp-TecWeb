@@ -32,6 +32,7 @@ function BrandIcon({ size = 32 }: { size?: number }) {
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onMobileClose?: () => void;
 }
 
 const nav = [
@@ -44,7 +45,7 @@ const nav = [
   { label: "Similaridade",       href: "/reports/similarity",icon: GitCompareArrows },
 ];
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
 

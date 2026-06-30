@@ -149,8 +149,8 @@ export default function RecommendPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 md:p-8">
+      <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
           <Network size={22} className="text-brand-600" />
           <h1 className="text-2xl font-bold text-gray-900">Recomendar Jogadores Similares</h1>
@@ -161,8 +161,8 @@ export default function RecommendPage() {
       </div>
 
       {/* Input */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6 max-w-4xl">
-        <div className="flex gap-3">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5 mb-6">
+        <div className="flex flex-wrap gap-3">
           <div ref={boxRef} className="relative flex-1">
             <input
               type="text"
@@ -284,12 +284,21 @@ export default function RecommendPage() {
       )}
 
       {/* Result */}
+      {!loading && !result && !error && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <Network size={28} className="text-gray-300" />
+          </div>
+          <p className="text-gray-700 font-medium mb-1">Digite o nome de um jogador</p>
+          <p className="text-sm text-gray-400 max-w-xs">
+            O sistema encontra os jogadores estatisticamente mais similares usando KNN.
+          </p>
+        </div>
+      )}
       {loading && (
         <div>
           <Skeleton className="h-4 w-40 mb-2" />
-          <div className="max-w-md">
-            <PlayerListSkeleton count={1} />
-          </div>
+          <PlayerListSkeleton count={1} />
           <Skeleton className="h-4 w-48 mt-6 mb-2" />
           <PlayerGridSkeleton count={topK > 9 ? 9 : topK} />
         </div>
@@ -298,7 +307,7 @@ export default function RecommendPage() {
         <div>
           {/* Reference player */}
           {result.player && Object.keys(result.player).length > 0 && (
-            <div className="mb-6 max-w-md">
+            <div className="mb-6">
               <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Jogador de Referência</p>
               <PlayerCard
                 name={String(result.player.Player ?? "—")}
