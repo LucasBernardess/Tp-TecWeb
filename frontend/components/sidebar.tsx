@@ -36,9 +36,9 @@ interface SidebarProps {
 
 const nav = [
   { label: "Overview",           href: "/",                  icon: LayoutDashboard },
-  { label: "Buscar Jogadores",   href: "/search",            icon: Search },
-  { label: "Recomendar Similares", href: "/recommend",       icon: Network },
   { label: "Jogadores",          href: "/players",           icon: Users },
+  { label: "Busca por Perfil",   href: "/search",            icon: Search },
+  { label: "Recomendar Similares", href: "/recommend",       icon: Network },
   { type: "divider", label: "Relatórios" },
   { label: "Ranking",            href: "/reports/ranking",   icon: Trophy },
   { label: "Similaridade",       href: "/reports/similarity",icon: GitCompareArrows },

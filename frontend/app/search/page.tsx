@@ -61,7 +61,7 @@ export default function SearchPage() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <Search size={22} className="text-brand-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Buscar Jogadores</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Busca por Perfil</h1>
         </div>
         <p className="text-gray-500">
           Descreva o perfil desejado em linguagem natural. O sistema usa BM25 para encontrar os melhores candidatos.
