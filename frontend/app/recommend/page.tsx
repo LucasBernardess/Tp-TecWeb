@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Network, Loader2, Info, Search, Clock } from "lucide-react";
+import { Network, Loader2, Info, Search, Clock, FileDown } from "lucide-react";
 
 import { PlayerCard } from "@/components/player-card";
-import { Skeleton, PlayerListSkeleton } from "@/components/skeleton";
+import { Skeleton, PlayerListSkeleton, PlayerGridSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/lib/authContext";
 import { recordHistory, listRecentHistory, type HistoryEntry } from "@/lib/history";
 import { getJogadoresFiltrados, type JogadorListItem } from "@/services/jogadorService";
 import { getSimilaresPorNome } from "@/services/recomendacaoService";
+import { generateSimilarityReport } from "@/lib/similarityReport";
 
 type Player = Record<string, string | number | null>;
 
@@ -20,6 +21,11 @@ export default function RecommendPage() {
   const [result, setResult] = useState<{ player: Player; similar_players: Player[] } | null>(null);
   const [error, setError] = useState("");
   const [recent, setRecent] = useState<HistoryEntry[]>([]);
+
+  function handleDownloadReport() {
+    if (!result) return;
+    generateSimilarityReport(result);
+  }
 
   const loadRecent = useCallback(async () => {
     try {
@@ -143,7 +149,7 @@ export default function RecommendPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <Network size={22} className="text-brand-600" />
@@ -155,7 +161,7 @@ export default function RecommendPage() {
       </div>
 
       {/* Input */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6 max-w-4xl">
         <div className="flex gap-3">
           <div ref={boxRef} className="relative flex-1">
             <input
@@ -240,6 +246,15 @@ export default function RecommendPage() {
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Network size={16} />}
             Recomendar
           </button>
+          {!loading && result && (
+            <button
+              onClick={handleDownloadReport}
+              className="flex items-center gap-2 border border-brand-200 text-brand-700 bg-brand-50 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors"
+            >
+              <FileDown size={16} />
+              Baixar PDF
+            </button>
+          )}
         </div>
 
         {/* Recomendações recentes */}
@@ -273,16 +288,18 @@ export default function RecommendPage() {
       {loading && (
         <div>
           <Skeleton className="h-4 w-40 mb-2" />
-          <PlayerListSkeleton count={1} />
+          <div className="max-w-md">
+            <PlayerListSkeleton count={1} />
+          </div>
           <Skeleton className="h-4 w-48 mt-6 mb-2" />
-          <PlayerListSkeleton count={topK > 5 ? 5 : topK} />
+          <PlayerGridSkeleton count={topK > 9 ? 9 : topK} />
         </div>
       )}
       {!loading && result && (
         <div>
           {/* Reference player */}
           {result.player && Object.keys(result.player).length > 0 && (
-            <div className="mb-6">
+            <div className="mb-6 max-w-md">
               <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Jogador de Referência</p>
               <PlayerCard
                 name={String(result.player.Player ?? "—")}
@@ -304,7 +321,7 @@ export default function RecommendPage() {
           <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Jogadores Similares ({result.similar_players.length})
           </p>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {result.similar_players.map((p, i) => (
               <PlayerCard
                 key={i}
